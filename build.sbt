@@ -11,3 +11,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.2"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.2" % "test"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.3" % "test"
+
+artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
+  val time = System.currentTimeMillis
+  artifact.name + "-" + module.revision + time + "." + artifact.extension
+}
