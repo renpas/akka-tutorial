@@ -1,6 +1,5 @@
 package pi
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import pi.PiMaster.{Calculate, CalculationResult}
 
@@ -10,13 +9,16 @@ import pi.PiMaster.{Calculate, CalculationResult}
 object PiApp extends App{
 
   class PiStarter extends Actor with ActorLogging{
+    var start:Long = _
     override def receive: Receive = {
       case "start" =>
-        val piMasterRef = system.actorOf(PiMaster.props(Some(10)))
+        val piMasterRef = system.actorOf(PiMaster.props(Some(50)))
+        start = System.currentTimeMillis()
         piMasterRef ! Calculate(0, 10000)
 
       case CalculationResult(id, pi) =>
-        log.info("Calculation [{}] finished {}", id, pi)
+        log.info("Calculation [{}] finished {} took {} ms", id, pi, System.currentTimeMillis() - start)
+//        log.info("Took {} ms", )
         context.system.terminate()
     }
   }

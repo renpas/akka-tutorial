@@ -12,14 +12,13 @@ object PiMaster {
 
   case class Calculate(id:Long, nrOfElements: Int)
   case class Work(id:Long, start: Int, nrOfElements: Int)
-  case class Result(id:Long, value: Double)
-  case class CalculationWork(id:Long, pi:Double, nrOfElementsLeft: Int, senderRef:ActorRef)
-  case class CalculationResult(id:Long, pi: Double)
+  case class Result(id:Long, value: BigDecimal)
+  case class CalculationWork(id:Long, pi:BigDecimal, nrOfElementsLeft: Int, senderRef:ActorRef)
+  case class CalculationResult(id:Long, pi: BigDecimal)
 }
 
 class PiMaster(nrOfWorkers: Int) extends Actor with ActorLogging {
 
-  var pi:Double = 0
   var calculatedMap = Map.empty[Long, CalculationWork]
   val workRouter = {
     val workers = Vector.fill(nrOfWorkers) {
@@ -30,13 +29,13 @@ class PiMaster(nrOfWorkers: Int) extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case Calculate(id, nrOfElements) =>
-      calculatedMap += id -> CalculationWork(id, 0, nrOfElements, sender())
+      calculatedMap += id -> CalculationWork(id, BigDecimal(0), nrOfElements, sender())
       for(i <- 0 until nrOfElements)
         workRouter.route(Work(id, i * nrOfElements, nrOfElements), context.self)
 
     case Result(id, value) =>
       var calculationWork = calculatedMap(id)
-      pi = calculationWork.pi + value
+      val pi:BigDecimal = calculationWork.pi + value
       calculationWork =  calculationWork.copy(pi = pi, nrOfElementsLeft = calculationWork.nrOfElementsLeft - 1)
       calculatedMap += id -> calculationWork
       if(calculationWork.nrOfElementsLeft == 0){
